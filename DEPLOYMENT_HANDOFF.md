@@ -11,6 +11,12 @@
 - 구성: Vue 3 프론트엔드, FastAPI 백엔드, MongoDB, k3s, GitHub Actions, Docker Hub, SSH
 - GitHub Actions 파일: `.github/workflows/deploy.yml`
 
+## 배포 설정 기록
+
+- 2026-08-05: 사용자가 GitHub `Production` Environment의 `ENV_VARS`에 `KAKAO_REST_API_KEY`를 등록했다고 확인했다.
+- 키 값은 이 저장소나 문서에 저장하지 않는다.
+- 다음 GitHub Actions 배포에서 정류장 사이 도로 거리 자동 입력 기능을 사용할 수 있다.
+
 ## 이미 끝난 일
 
 1. 노선·정류장·거리·평균 속도를 저장하고 시간을 계산하는 웹 앱을 만들었다.
