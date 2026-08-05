@@ -1,0 +1,20 @@
+[project]
+name = "bus-time-api"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115",
+  "pymongo>=4.11",
+  "uvicorn[standard]>=0.30",
+]
+
+[project.optional-dependencies]
+dev = ["httpx>=0.27", "pytest>=8.0"]
+
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

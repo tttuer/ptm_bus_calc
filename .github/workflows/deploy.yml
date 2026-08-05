@@ -1,0 +1,75 @@
+name: Build and deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  API_IMAGE: ghcr.io/${{ github.repository_owner }}/ptm_bus_calc-api:${{ github.sha }}
+  WEB_IMAGE: ghcr.io/${{ github.repository_owner }}/ptm_bus_calc-web:${{ github.sha }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv run --directory backend --extra dev pytest
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - run: pnpm --dir frontend install --frozen-lockfile
+      - run: pnpm --dir frontend build
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: true
+          tags: ${{ env.API_IMAGE }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: true
+          tags: ${{ env.WEB_IMAGE }}
+          build-args: VITE_KAKAO_MAP_KEY=${{ secrets.KAKAO_MAP_KEY }}
+      - uses: azure/setup-kubectl@v4
+      - name: Deploy to k3s
+        env:
+          KUBECONFIG_B64: ${{ secrets.KUBECONFIG_B64 }}
+          K8S_SECRETS_ENV: ${{ secrets.K8S_SECRETS_ENV }}
+          GHCR_PULL_TOKEN: ${{ secrets.GHCR_PULL_TOKEN }}
+        run: |
+          printf '%s' "$KUBECONFIG_B64" | base64 --decode > "$RUNNER_TEMP/kubeconfig"
+          printf '%s' "$K8S_SECRETS_ENV" > k8s/overlays/prod/secrets.env
+          kubectl --kubeconfig "$RUNNER_TEMP/kubeconfig" apply -f k8s/base/namespace.yaml
+          kubectl --kubeconfig "$RUNNER_TEMP/kubeconfig" -n ptm-bus create secret docker-registry ghcr-pull \
+            --docker-server=ghcr.io --docker-username="${{ github.repository_owner }}" --docker-password="$GHCR_PULL_TOKEN" \
+            --dry-run=client -o yaml | kubectl --kubeconfig "$RUNNER_TEMP/kubeconfig" apply -f -
+          kubectl --kubeconfig "$RUNNER_TEMP/kubeconfig" apply -k k8s/overlays/prod
+          kubectl --kubeconfig "$RUNNER_TEMP/kubeconfig" -n ptm-bus set image deployment/bus-api api="$API_IMAGE"
+          kubectl --kubeconfig "$RUNNER_TEMP/kubeconfig" -n ptm-bus set image deployment/bus-web web="$WEB_IMAGE"
+          kubectl --kubeconfig "$RUNNER_TEMP/kubeconfig" -n ptm-bus rollout status deployment/bus-api --timeout=180s
+          kubectl --kubeconfig "$RUNNER_TEMP/kubeconfig" -n ptm-bus rollout status deployment/bus-web --timeout=180s

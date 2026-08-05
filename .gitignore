@@ -1,0 +1,9 @@
+.env
+backend/.venv/
+backend/.pytest_cache/
+__pycache__/
+*.pyc
+*.egg-info/
+frontend/node_modules/
+frontend/dist/
+k8s/overlays/prod/secrets.env

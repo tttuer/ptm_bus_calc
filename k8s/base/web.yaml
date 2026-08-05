@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bus-web
+spec:
+  selector:
+    app: bus-web
+  ports:
+    - port: 80
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bus-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bus-web
+  template:
+    metadata:
+      labels:
+        app: bus-web
+    spec:
+      imagePullSecrets:
+        - name: ghcr-pull
+      containers:
+        - name: web
+          image: bus-web:latest
+          ports:
+            - name: http
+              containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 10
