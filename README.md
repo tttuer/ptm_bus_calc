@@ -2,6 +2,8 @@
 
 정류장 사이 거리와 평균 속도로 구간별·전체 예상 시간을 계산하는 웹 앱입니다.
 
+다른 컴퓨터에서 배포 작업을 이어갈 때는 [DEPLOYMENT_HANDOFF.md](DEPLOYMENT_HANDOFF.md)를 먼저 읽으세요.
+
 ## 실행 방법
 
 1. `.env.example`을 `.env`로 복사합니다. 지도 사용 시 `VITE_KAKAO_MAP_KEY`에 JavaScript 키를 입력합니다.
