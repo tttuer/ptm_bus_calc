@@ -38,3 +38,14 @@ class EstimateResult(BaseModel):
     stops: list[StopResult]
     total_distance_m: float
     total_seconds: int
+
+
+class DirectionRequest(BaseModel):
+    origin_latitude: Annotated[float, Field(ge=-90, le=90)]
+    origin_longitude: Annotated[float, Field(ge=-180, le=180)]
+    destination_latitude: Annotated[float, Field(ge=-90, le=90)]
+    destination_longitude: Annotated[float, Field(ge=-180, le=180)]
+
+
+class DirectionResult(BaseModel):
+    distance_m: int

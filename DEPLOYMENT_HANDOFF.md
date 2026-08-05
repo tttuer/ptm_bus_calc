@@ -34,7 +34,7 @@ GitHub 저장소에서 **Settings → Secrets and variables → Actions**로 들
 | Secret | 넣을 값 |
 | --- | --- |
 | `KAKAO_MAP_KEY` | 카카오 Developers의 JavaScript 키 |
-| `ENV_VARS` | 아래 MongoDB 환경변수 3줄 전체 |
+| `ENV_VARS` | 아래 MongoDB 및 카카오 REST API 환경변수 4줄 전체 |
 | `DOCKER_USERNAME` | Docker Hub 사용자 이름 |
 | `DOCKER_PASSWORD` | Docker Hub Access Token 또는 비밀번호 |
 | `SSH_HOST` | k3s 서버 주소 또는 IP |
@@ -48,6 +48,7 @@ GitHub 저장소에서 **Settings → Secrets and variables → Actions**로 들
 MONGO_INITDB_ROOT_USERNAME=bus_admin
 MONGO_INITDB_ROOT_PASSWORD=긴_실제_비밀번호
 MONGODB_URI=mongodb://bus_admin:긴_실제_비밀번호@mongo.ptm-bus.svc.cluster.local:27017/bus_time?authSource=admin
+KAKAO_REST_API_KEY=카카오_REST_API_키
 ```
 
 비밀번호에 `@`, `:`, `/`, `?` 등이 있다면 `MONGODB_URI` 안에서는 URL 인코딩해야 한다. 가장 쉬운 방법은 영문·숫자만 포함한 긴 비밀번호를 사용하는 것이다.

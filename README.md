@@ -26,7 +26,7 @@ GitHub Actions는 `main` 브랜치에 푸시되면 Docker Hub에 API·웹 이미
 | Secret | 값 |
 | --- | --- |
 | `KAKAO_MAP_KEY` | 카카오 JavaScript 키 |
-| `ENV_VARS` | MongoDB 환경변수 3줄(`DEPLOYMENT_HANDOFF.md` 참고) |
+| `ENV_VARS` | MongoDB 및 카카오 REST API 환경변수 4줄(`DEPLOYMENT_HANDOFF.md` 참고) |
 | `DOCKER_USERNAME` | Docker Hub 사용자 이름 |
 | `DOCKER_PASSWORD` | Docker Hub Access Token 또는 비밀번호 |
 | `SSH_HOST` | k3s 서버 주소 |

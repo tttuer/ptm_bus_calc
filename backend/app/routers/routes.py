@@ -5,8 +5,9 @@ from fastapi import APIRouter, HTTPException, Request, Response, status
 from pymongo import ReturnDocument
 
 from app.database import routes_collection
-from app.schemas import EstimateResult, RouteInput, RouteResult
+from app.schemas import DirectionRequest, DirectionResult, EstimateResult, RouteInput, RouteResult
 from app.services.calculator import estimate
+from app.services.directions import driving_distance
 
 router = APIRouter(prefix="/routes", tags=["routes"])
 
@@ -54,6 +55,11 @@ async def create_route(request: Request, route: RouteInput):
 @router.post("/estimate", response_model=EstimateResult)
 async def estimate_route(route: RouteInput):
     return estimate(route)
+
+
+@router.post("/driving-distance", response_model=DirectionResult)
+async def get_driving_distance(direction: DirectionRequest):
+    return await driving_distance(direction)
 
 
 @router.get("/{route_id}", response_model=RouteResult)

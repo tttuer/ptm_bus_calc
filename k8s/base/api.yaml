@@ -38,6 +38,11 @@ spec:
                   key: MONGODB_URI
             - name: MONGODB_DB
               value: bus_time
+            - name: KAKAO_REST_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: bus-app-secrets
+                  key: KAKAO_REST_API_KEY
             - name: ALLOWED_ORIGINS
               value: https://ptm.baeksung.kr
           readinessProbe:

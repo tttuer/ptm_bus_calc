@@ -45,9 +45,24 @@ function setCoordinate(latitude: number, longitude: number) {
   if (stop) Object.assign(stop, { latitude, longitude })
 }
 
-function setPlace(name: string, latitude: number, longitude: number) {
+const hasLocation = (stop: Stop) => stop.latitude !== null && stop.longitude !== null
+
+async function fillDrivingDistance(index: number) {
+  const [previous, current] = [form.stops[index - 1], form.stops[index]]
+  if (!previous || !current || !hasLocation(previous) || !hasLocation(current)) return
+  try { current.distance_from_previous_m = (await api.drivingDistance(previous, current)).distance_m }
+  catch (cause) { error.value = cause instanceof Error ? cause.message : '도로 거리를 계산하지 못했습니다.' }
+}
+
+async function fillAllDrivingDistances() {
+  for (let index = 1; index < form.stops.length; index += 1) await fillDrivingDistance(index)
+}
+
+async function setPlace(name: string, latitude: number, longitude: number) {
   const stop = form.stops[selectedIndex.value]
-  if (stop) Object.assign(stop, { name, latitude, longitude })
+  if (!stop) return
+  Object.assign(stop, { name, latitude, longitude })
+  await fillDrivingDistance(selectedIndex.value)
 }
 
 async function save() {
@@ -78,14 +93,14 @@ watch(form, () => {
   <section class="editor">
     <header><h2>{{ route ? '노선 편집' : '새 노선' }}</h2><button v-if="route" class="danger" @click="remove">삭제</button></header>
     <label>노선 이름<input v-model.trim="form.name" placeholder="예: 마을버스 01" /></label>
-    <label>평균 속도 (km/h)<input v-model.number="form.average_speed_kmh" type="number" min="1" max="120" /></label>
+    <label>버스 평균 속도 (km/h)<input v-model.number="form.average_speed_kmh" type="number" min="1" max="120" /></label>
     <div class="summary"><span>총 거리 {{ distanceText(estimate?.total_distance_m ?? 0) }}</span><strong>예상 {{ secondsText(estimate?.total_seconds ?? 0) }}</strong></div>
     <RouteMap :stops="form.stops" :selected-index="selectedIndex" @coordinate="setCoordinate" @place="setPlace" />
-    <p class="hint">정류장을 선택한 뒤 지도에서 클릭하거나 장소 검색 결과를 고르면 좌표가 입력됩니다.</p>
-    <div class="stops"><header><h3>정류장</h3><button @click="addStop">+ 정류장 추가</button></header>
+    <p class="hint">정류장을 선택한 뒤 지도에서 정류장 이름을 검색하면 이름과 위치가 채워집니다.</p>
+    <div class="stops"><header><h3>정류장</h3><span><button @click="fillAllDrivingDistances">도로 거리 자동 입력</button><button @click="addStop">+ 정류장 추가</button></span></header>
       <article v-for="(stop, index) in form.stops" :key="index" :class="{ selected: index === selectedIndex }" @click="selectedIndex = index">
-        <b>{{ index + 1 }}</b><input v-model.trim="stop.name" placeholder="정류장 이름" />
-        <label>이전 거리(m)<input v-model.number="stop.distance_from_previous_m" type="number" min="0" :disabled="index === 0" /></label>
+        <b>{{ index + 1 }}</b><input v-model.trim="stop.name" placeholder="지도에서 정류장 검색 또는 직접 입력" />
+        <label>이전 정류장 → 이 정류장 거리 (m)<input v-model.number="stop.distance_from_previous_m" type="number" min="0" :disabled="index === 0" /></label>
         <span>{{ secondsText(estimate?.stops[index]?.segment_seconds ?? 0) }}</span>
         <button :disabled="index === 0" @click.stop="moveStop(index, -1)">↑</button><button :disabled="index === form.stops.length - 1" @click.stop="moveStop(index, 1)">↓</button><button class="danger" @click.stop="removeStop(index)">×</button>
       </article>
