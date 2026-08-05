@@ -17,7 +17,7 @@ API 문서: http://localhost:8000/docs
 
 ## k3s 배포
 
-GitHub Actions는 `main` 브랜치에 푸시되면 이미지를 GitHub Container Registry(GHCR)에 올린 뒤 k3s에 배포합니다.
+GitHub Actions는 `main` 브랜치에 푸시되면 Docker Hub에 API·웹 이미지를 올린 뒤 SSH로 k3s 서버에 접속해 배포합니다.
 
 1. `ptm.baeksung.kr`의 DNS A 레코드를 k3s Ingress의 외부 IP로 연결합니다.
 2. k3s에 Traefik과 cert-manager를 설치합니다. [k8s/cert-manager/clusterissuer.example.yaml](k8s/cert-manager/clusterissuer.example.yaml)의 이메일을 바꾼 뒤 적용합니다.
@@ -26,11 +26,15 @@ GitHub Actions는 `main` 브랜치에 푸시되면 이미지를 GitHub Container
 | Secret | 값 |
 | --- | --- |
 | `KAKAO_MAP_KEY` | 카카오 JavaScript 키 |
-| `KUBECONFIG_B64` | 배포 권한이 있는 kubeconfig 파일을 Base64로 변환한 값 |
-| `K8S_SECRETS_ENV` | `k8s/overlays/prod/secrets.env.example`를 실제 비밀번호로 채운 내용 |
-| `GHCR_PULL_TOKEN` | `read:packages` 권한을 가진 GitHub Personal Access Token |
+| `ENV_VARS` | MongoDB 환경변수 3줄(`DEPLOYMENT_HANDOFF.md` 참고) |
+| `DOCKER_USERNAME` | Docker Hub 사용자 이름 |
+| `DOCKER_PASSWORD` | Docker Hub Access Token 또는 비밀번호 |
+| `SSH_HOST` | k3s 서버 주소 |
+| `SSH_PORT` | SSH 포트 |
+| `SSH_USER` | SSH 사용자 이름 |
+| `SSH_PRIVATE_KEY` | SSH 개인 키 |
 
-`K8S_SECRETS_ENV`의 MongoDB 비밀번호에 `@`, `:`, `/` 같은 문자가 있으면 URI 안에서는 URL 인코딩해야 합니다. GHCR 패키지가 비공개라면 k3s에서 읽을 수 있도록 GHCR 이미지 pull secret도 별도로 설정해야 합니다.
+`ENV_VARS`의 MongoDB 비밀번호에 `@`, `:`, `/` 같은 문자가 있으면 URI 안에서는 URL 인코딩해야 합니다.
 
 ## 계산 규칙
 

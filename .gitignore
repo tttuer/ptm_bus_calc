@@ -6,4 +6,4 @@ __pycache__/
 *.egg-info/
 frontend/node_modules/
 frontend/dist/
-k8s/overlays/prod/secrets.env
+k8s/bus-app-secrets.yaml

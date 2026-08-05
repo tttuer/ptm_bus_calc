@@ -2,9 +2,3 @@ namespace: ptm-bus
 resources:
   - ../../base
   - ingress.yaml
-secretGenerator:
-  - name: bus-app-secrets
-    envs:
-      - secrets.env
-generatorOptions:
-  disableNameSuffixHash: true
