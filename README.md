@@ -20,7 +20,7 @@ API 문서: http://localhost:8000/docs
 GitHub Actions는 `main` 브랜치에 푸시되면 Docker Hub에 API·웹 이미지를 올린 뒤 SSH로 k3s 서버에 접속해 배포합니다.
 
 1. `ptm.baeksung.kr`의 DNS A 레코드를 k3s Ingress의 외부 IP로 연결합니다.
-2. k3s에 Traefik과 cert-manager를 설치합니다. [k8s/cert-manager/clusterissuer.example.yaml](k8s/cert-manager/clusterissuer.example.yaml)의 이메일을 바꾼 뒤 적용합니다.
+2. k3s에 Traefik과 cert-manager를 설치합니다. GitHub Actions가 [k8s/cert-manager/clusterissuer.yaml](k8s/cert-manager/clusterissuer.yaml)을 자동 적용합니다.
 3. GitHub 저장소의 **Settings → Secrets and variables → Actions**에 다음 값을 추가합니다.
 
 | Secret | 값 |

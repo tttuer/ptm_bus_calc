@@ -56,12 +56,7 @@ MONGODB_URI=mongodb://bus_admin:긴_실제_비밀번호@mongo.ptm-bus.svc.cluste
 
 1. k3s에 기본 Traefik Ingress가 실행 중인지 확인한다.
 2. `ptm.baeksung.kr` DNS A 레코드를 Traefik의 외부 IP로 연결한다.
-3. cert-manager를 k3s에 설치한다.
-4. `k8s/cert-manager/clusterissuer.example.yaml`의 `REPLACE_WITH_YOUR_EMAIL`을 실제 이메일로 바꿔 적용한다.
-
-```powershell
-kubectl apply -f k8s/cert-manager/clusterissuer.example.yaml
-```
+3. cert-manager를 k3s에 설치한다. 이메일이 설정된 `k8s/cert-manager/clusterissuer.yaml`은 GitHub Actions가 자동 적용한다.
 
 GitHub Actions는 SSH로 서버에 접속하고, 서버 안의 `kubectl`로 배포한다. 따라서 k3s 서버에는 다음이 필요하다.
 
