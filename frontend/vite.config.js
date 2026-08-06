@@ -5,6 +5,6 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   return {
     plugins: [vue()],
-    server: { proxy: { '/api': { target: env.VITE_API_PROXY_TARGET || 'http://localhost:8001', changeOrigin: true } } },
+    server: { proxy: { '/api': { target: env.VITE_API_PROXY_TARGET || 'http://localhost:8000', changeOrigin: true } } },
   }
 })
