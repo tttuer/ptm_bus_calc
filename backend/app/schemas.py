@@ -21,14 +21,39 @@ class DriverInput(BaseModel):
     work_end: TimeText
 
 
+class GenerationSettings(BaseModel):
+    first_departure: TimeText
+    last_departure: TimeText
+    outbound_minutes: Annotated[int, Field(ge=1, le=360)]
+    inbound_minutes: Annotated[int, Field(ge=1, le=360)]
+    min_rest_minutes: Annotated[int, Field(ge=0, le=360)] = 10
+    bus_count: Annotated[int, Field(ge=1, le=100)] = 1
+    interval_minutes: Annotated[int, Field(ge=0, le=360)] = 0
+
+
+class RouteStopInput(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid4()))
+    name: Annotated[str, Field(min_length=1, max_length=80)]
+    travel_weight: Annotated[float, Field(ge=0, le=100)] = 1
+    dwell_minutes: Annotated[int, Field(ge=0, le=10)] = 1
+
+
+class StopTime(BaseModel):
+    stop_id: str
+    stop_name: str
+    arrival_time: TimeText
+    departure_time: TimeText
+
+
 class TripInput(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid4()))
     direction: Literal["outbound", "inbound"] = "outbound"
     departure_time: TimeText
     arrival_time: TimeText
     distance_km: DistanceKm
-    bus_id: str
-    driver_id: str
+    bus_id: str | None = None
+    driver_id: str | None = None
+    stop_times: list[StopTime] = Field(default_factory=list, max_length=200)
 
 
 class ActivityInput(BaseModel):
@@ -59,6 +84,8 @@ class ScheduleInput(BaseModel):
     destination: Annotated[str, Field(min_length=1, max_length=80)]
     max_average_speed_kmh: Speed = 60
     headway_minutes: Annotated[int, Field(ge=1, le=360)] = 30
+    generation: GenerationSettings | None = None
+    stops: list[RouteStopInput] = Field(default_factory=list, max_length=200)
     buses: list[BusInput] = Field(default_factory=list, max_length=100)
     drivers: list[DriverInput] = Field(default_factory=list, max_length=200)
     trips: list[TripInput] = Field(default_factory=list, max_length=1_000)
@@ -88,3 +115,10 @@ class ScheduleResult(ScheduleInput):
     issues: list[Issue]
     created_at: datetime | None = None
     updated_at: datetime | None = None
+
+
+class GenerationResult(BaseModel):
+    schedule: ScheduleInput | None = None
+    required_bus_count: int
+    actual_headway_minutes: list[int]
+    message: str

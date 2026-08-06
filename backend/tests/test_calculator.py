@@ -1,5 +1,6 @@
 from app.schemas import ActivityInput, BusInput, DriverInput, ScheduleInput, TripInput
 from app.services.calculator import calculate
+from app.services.generator import generate
 
 
 def schedule(**changes):
@@ -24,3 +25,26 @@ def test_calculate_marks_overlapping_bus_and_charge_time():
     assert result.activities[0].total_minutes == 50
     assert result.activities[0].end_time == "11:00"
     assert any("버스 일정이 겹칩니다" in issue.message for issue in result.issues)
+
+
+def generation(**changes):
+    return {
+        "first_departure": "06:00", "last_departure": "07:00", "outbound_minutes": 60,
+        "inbound_minutes": 60, "min_rest_minutes": 5, "bus_count": 3, "interval_minutes": 20,
+    } | changes
+
+
+def test_generate_staggers_each_bus_by_the_input_headway():
+    result = generate(schedule(generation=generation()))
+    assert result.schedule and result.required_bus_count == 3
+    outbound = [trip for trip in result.schedule.trips if trip.direction == "outbound"]
+    assert [(trip.departure_time, trip.bus_id) for trip in outbound[:3]] == [
+        ("06:00", result.schedule.buses[0].id), ("06:20", result.schedule.buses[1].id), ("06:40", result.schedule.buses[2].id),
+    ]
+    assert not calculate(result.schedule).issues
+
+
+def test_generate_calculates_interval_when_input_is_zero():
+    result = generate(schedule(generation=generation(bus_count=5, interval_minutes=0)))
+    assert result.schedule and result.schedule.headway_minutes == 26
+    assert [trip.departure_time for trip in result.schedule.trips if trip.direction == "outbound"] == ["06:00", "06:26", "06:52"]

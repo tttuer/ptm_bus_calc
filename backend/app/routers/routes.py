@@ -5,10 +5,19 @@ from fastapi import APIRouter, HTTPException, Request, Response, status
 from pymongo import ReturnDocument
 
 from app.database import schedules_collection
-from app.schemas import ScheduleInput, ScheduleResult
+from app.schemas import GenerationResult, ScheduleInput, ScheduleResult
 from app.services.calculator import calculate
+from app.services.generator import generate
 
 router = APIRouter(prefix="/schedules", tags=["schedules"])
+
+
+@router.post("/generate", response_model=GenerationResult)
+async def generate_schedule(schedule: ScheduleInput):
+    try:
+        return generate(schedule)
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
 
 
 def schedule_result(document: dict) -> ScheduleResult:
