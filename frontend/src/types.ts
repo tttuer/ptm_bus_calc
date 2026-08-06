@@ -1,19 +1,9 @@
-export type Stop = {
-  name: string
-  distance_from_previous_m: number
-  latitude: number | null
-  longitude: number | null
-}
-
-export type StopResult = Stop & { segment_seconds: number; cumulative_seconds: number }
-
-export type RouteInput = { name: string; average_speed_kmh: number; stops: Stop[] }
-
-export type Route = Omit<RouteInput, 'stops'> & {
-  id: string
-  stops: StopResult[]
-  total_distance_m: number
-  total_seconds: number
-}
-
-export type Estimate = Pick<Route, 'stops' | 'total_distance_m' | 'total_seconds'>
+export type Bus = { id: string; name: string }
+export type Driver = { id: string; name: string; work_start: string; work_end: string }
+export type Trip = { id: string; direction: 'outbound' | 'inbound'; departure_time: string; arrival_time: string; distance_km: number; bus_id: string; driver_id: string }
+export type Activity = { id: string; kind: 'rest' | 'charge'; start_time: string; bus_id: string; driver_id: string | null; duration_minutes: number; to_charger_minutes: number; to_charger_distance_km: number; charge_minutes: number; to_departure_minutes: number; to_departure_distance_km: number }
+export type Issue = { severity: 'warning' | 'error'; entity_id: string; message: string }
+export type ScheduleInput = { name: string; origin: string; destination: string; max_average_speed_kmh: number; headway_minutes: number; buses: Bus[]; drivers: Driver[]; trips: Trip[]; activities: Activity[] }
+export type TripResult = Trip & { duration_minutes: number; required_average_speed_kmh: number }
+export type ActivityResult = Activity & { end_time: string; total_minutes: number }
+export type Schedule = Omit<ScheduleInput, 'trips' | 'activities'> & { id: string; trips: TripResult[]; activities: ActivityResult[]; issues: Issue[] }

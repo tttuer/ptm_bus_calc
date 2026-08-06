@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import ALLOWED_ORIGINS
 from app.database import create_client
-from app.routers.routes import router as routes_router
+from app.routers.routes import router as schedules_router
 
 
 @asynccontextmanager
@@ -17,7 +17,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Bus Time API", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=ALLOWED_ORIGINS, allow_methods=["*"], allow_headers=["*"])
-app.include_router(routes_router, prefix="/api")
+app.include_router(schedules_router, prefix="/api")
 
 
 @app.get("/api/health")
