@@ -82,4 +82,4 @@ npm run dev
 
 - 이 저장소는 `auto_bus_schedule` 구조를 기준으로 정리했습니다. 기사 자동 배정은 아직 포함하지 않으며, 휴식시간에는 충전시간을 함께 포함하는 방식입니다.
 - 결과는 차량별 회차표, 전체 운행 목록, 운행 타임라인으로 확인하고 엑셀로 내려받을 수 있습니다.
-- 현재 프론트엔드 API 주소는 개발용 `http://localhost:8001/api`로 고정되어 있습니다. 웹 배포 전에는 `frontend/src/App.vue`의 `API_BASE`를 실제 백엔드 주소 또는 환경변수로 바꿔야 합니다.
+- 로컬 개발에서는 Vite 프록시가 `/api` 요청을 `http://localhost:8001` 백엔드로 전달합니다. 별도 도메인에 배포할 때는 `frontend/.env`에 `VITE_API_BASE_URL=https://api.example.com/api`를 설정합니다.

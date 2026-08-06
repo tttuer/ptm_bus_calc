@@ -40,6 +40,6 @@ npm run build
 
 ## 배포 전 확인할 점
 
-- `frontend/src/App.vue`의 `API_BASE`는 현재 개발용 `http://localhost:8001/api`입니다. 실제 백엔드 주소 또는 환경변수로 바꿉니다.
+- 로컬에서는 Vite 프록시가 `/api`를 `http://localhost:8001`로 전달합니다. 별도 도메인 배포 시 `frontend/.env`의 `VITE_API_BASE_URL`에 실제 백엔드 API 주소를 설정합니다.
 - FastAPI CORS는 현재 모든 출처를 허용합니다. 운영 환경에서는 프론트엔드 도메인만 허용하도록 좁힙니다.
 - 이 버전에는 기사 자동 배정, 충전기 자리 검사, 배터리 잔량 계산이 없습니다.

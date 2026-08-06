@@ -357,8 +357,7 @@
 
 <script setup>
 import { ref, reactive, computed } from 'vue'
-
-const API_BASE = 'http://localhost:8001/api'
+import { scheduleApi } from './api'
 
 // Config form data
 const config = reactive({
@@ -493,18 +492,7 @@ const generateSchedule = async () => {
   error.value = ''
   warnings.value = []
   try {
-    const res = await fetch(`${API_BASE}/schedule/generate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(config)
-    })
-
-    if (!res.ok) {
-      const errData = await res.json()
-      throw new Error(errData.detail || '배차 생성 실패')
-    }
-
-    const data = await res.json()
+    const data = await scheduleApi.generate(config)
     scheduleList.value = data.schedule
     calculatedInterval.value = data.interval_minutes
     warnings.value = data.warnings || []
@@ -561,15 +549,7 @@ const recalculateRestTimes = (busId) => {
 // Export excel
 const exportExcel = async () => {
   try {
-    const res = await fetch(`${API_BASE}/schedule/export-excel`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(scheduleList.value)
-    })
-
-    if (!res.ok) throw new Error('엑셀 추출에 실패하였습니다.')
-
-    const blob = await res.blob()
+    const blob = await scheduleApi.exportExcel(scheduleList.value)
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
