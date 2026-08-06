@@ -59,14 +59,15 @@ def validate(schedule: ScheduleInput, trips: list[TripResult], activities: list[
 
     for trip in trips:
         start, end = interval(trip.departure_time, trip.arrival_time)
-        if trip.bus_id not in bus_ids: issues.append(Issue(severity="error", entity_id=trip.id, message="배정한 버스를 찾을 수 없습니다."))
-        driver = drivers.get(trip.driver_id)
-        if not driver: issues.append(Issue(severity="error", entity_id=trip.id, message="배정한 기사를 찾을 수 없습니다."))
-        elif not in_shift(start, end, driver.work_start, driver.work_end): issues.append(Issue(severity="warning", entity_id=trip.id, message="기사 근무시간 밖의 운행입니다."))
+        if not trip.bus_id: issues.append(Issue(severity="warning", entity_id=trip.id, message="배정할 차량이 없습니다."))
+        elif trip.bus_id not in bus_ids: issues.append(Issue(severity="error", entity_id=trip.id, message="배정한 버스를 찾을 수 없습니다."))
+        driver = drivers.get(trip.driver_id) if trip.driver_id else None
+        if trip.driver_id and not driver: issues.append(Issue(severity="error", entity_id=trip.id, message="배정한 기사를 찾을 수 없습니다."))
+        elif driver and not in_shift(start, end, driver.work_start, driver.work_end): issues.append(Issue(severity="warning", entity_id=trip.id, message="기사 근무시간 밖의 운행입니다."))
         if trip.required_average_speed_kmh > schedule.max_average_speed_kmh:
             issues.append(Issue(severity="warning", entity_id=trip.id, message=f"필요 평균속도 {trip.required_average_speed_kmh}km/h가 기준을 넘습니다."))
-        events[("버스", trip.bus_id)].append((start, end, trip.id))
-        events[("기사", trip.driver_id)].append((start, end, trip.id))
+        if trip.bus_id: events[("버스", trip.bus_id)].append((start, end, trip.id))
+        if trip.driver_id: events[("기사", trip.driver_id)].append((start, end, trip.id))
 
     for activity in activities:
         start, end = to_minutes(activity.start_time), to_minutes(activity.start_time) + activity.total_minutes
