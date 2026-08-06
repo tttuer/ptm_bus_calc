@@ -1,11 +1,11 @@
 FROM node:22-alpine AS build
 WORKDIR /app
-COPY package.json pnpm-lock.yaml ./
-RUN corepack enable && pnpm install --frozen-lockfile
+COPY package.json package-lock.json ./
+RUN npm ci
 COPY . .
-ARG VITE_KAKAO_MAP_KEY
-ENV VITE_KAKAO_MAP_KEY=$VITE_KAKAO_MAP_KEY
-RUN pnpm build
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+RUN npm run build
 
 FROM nginx:1.27-alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf
