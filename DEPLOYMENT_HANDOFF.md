@@ -1,100 +1,60 @@
-# 작업 인수인계: 버스 시간 계산기
+# 작업 인수인계: 버스 운행 시간표 편성기
 
-마지막 갱신: 2026-08-05
+마지막 갱신: 2026-08-06
 
-## 현재 상태
+## 프로젝트 방향
 
-- GitHub 저장소: `https://github.com/tttuer/ptm_bus_calc.git`
-- 기본 브랜치: `main`
-- 마지막 커밋: 새 컴퓨터에서 `git log -1 --oneline`으로 확인
-- 웹 주소 예정: `https://ptm.baeksung.kr`
-- 구성: Vue 3 프론트엔드, FastAPI 백엔드, MongoDB, k3s, GitHub Actions, Docker Hub, SSH
-- GitHub Actions 파일: `.github/workflows/deploy.yml`
+이 프로젝트는 더 이상 정류장별 시간을 계산하는 앱이 아닙니다. 여러 버스의 운행, 기사 휴게, 충전 일정을 한 시간표 안에 넣고 충돌을 찾는 앱입니다.
 
-## 배포 설정 기록
+간단히 말하면, 버스와 기사의 하루 계획표가 서로 겹치지 않는지 검사하는 도구입니다.
 
-- 2026-08-05: 사용자가 GitHub `Production` Environment의 `ENV_VARS`에 `KAKAO_REST_API_KEY`를 등록했다고 확인했다.
-- 키 값은 이 저장소나 문서에 저장하지 않는다.
-- 다음 GitHub Actions 배포에서 정류장 사이 도로 거리 자동 입력 기능을 사용할 수 있다.
+## 이번에 완료한 일
 
-## 이미 끝난 일
+1. 기존 `routes` API를 `schedules` API로 교체했습니다.
+2. 새 시간표는 아래 정보를 저장합니다.
+   - 노선 이름, 출발지, 도착지, 최대 평균속도, 배차 간격
+   - 버스와 기사, 기사 근무 시작·종료시간
+   - 여러 개의 운행편(출발·도착시각, 거리, 버스, 기사)
+   - 휴게 및 충전 일정
+3. 충전 일정에는 충전소까지의 이동시간·거리, 충전시간, 다음 출발지까지의 이동시간·거리를 기록합니다.
+4. 저장할 때 필요한 평균속도와 일정 충돌을 계산합니다.
+5. 이전 정류장 지도 화면과 카카오 지도 의존 화면을 제거했습니다.
+6. 백엔드 테스트와 프론트엔드 타입 검사·배포 빌드를 통과했습니다.
 
-1. 노선·정류장·거리·평균 속도를 저장하고 시간을 계산하는 웹 앱을 만들었다.
-2. 카카오 지도 표시와 장소 검색 기능을 추가했다.
-3. Docker 이미지 파일을 만들었다.
-   - `backend/Dockerfile`
-   - `frontend/Dockerfile`
-4. k3s 리소스를 만들었다.
-   - MongoDB StatefulSet과 5Gi 저장공간
-   - FastAPI Deployment와 Service
-   - Vue/Nginx Deployment와 Service
-   - `ptm.baeksung.kr` Ingress
-5. `main`에 푸시하면 테스트, Docker Hub 이미지 생성, SSH를 통한 k3s 배포를 시도하는 GitHub Actions를 만들었다.
+## 현재 검증 규칙
 
-## 아직 해야 할 일
+- 같은 버스의 일정이 겹치면 오류
+- 같은 기사의 일정이 겹치면 오류
+- 존재하지 않는 버스·기사를 배정하면 오류
+- 기사 근무시간 밖 운행이면 주의
+- 필요한 평균속도가 시간표의 최대 평균속도보다 높으면 주의
+- 출발시간보다 도착시간이 이르면 다음 날 도착으로 계산
 
-### 1. GitHub Secrets 등록
+## 화면 사용 순서
 
-GitHub 저장소에서 **Settings → Secrets and variables → Actions**로 들어가 아래 4개를 추가한다.
+1. 시간표 이름, 출발지, 도착지, 최대 평균속도, 배차 간격을 입력합니다.
+2. 버스와 기사를 추가합니다.
+3. 운행편의 출발·도착시간과 거리, 버스, 기사를 입력합니다.
+4. `다음 출발시간 추가`를 누르면 마지막 운행편을 배차 간격만큼 뒤로 복사합니다.
+5. 필요하면 휴게·충전 일정을 추가합니다.
+6. `저장하고 시간표 검사`를 누르고 아래의 오류·주의 목록을 확인합니다.
 
-| Secret | 넣을 값 |
-| --- | --- |
-| `KAKAO_MAP_KEY` | 카카오 Developers의 JavaScript 키 |
-| `ENV_VARS` | 아래 MongoDB 및 카카오 REST API 환경변수 4줄 전체 |
-| `DOCKER_USERNAME` | Docker Hub 사용자 이름 |
-| `DOCKER_PASSWORD` | Docker Hub Access Token 또는 비밀번호 |
-| `SSH_HOST` | k3s 서버 주소 또는 IP |
-| `SSH_PORT` | SSH 포트(보통 `22`) |
-| `SSH_USER` | k3s 서버 SSH 사용자 이름 |
-| `SSH_PRIVATE_KEY` | SSH 개인 키 전체 내용 |
+## 아직 만들지 않은 기능
 
-`ENV_VARS` 값 예시(실제 비밀번호로 바꿔서 한 줄씩 넣기):
+- 첫차·막차를 넣으면 하루 운행편을 한 번에 생성하는 기능
+- 사용 가능한 버스와 기사를 자동으로 배정하는 기능
+- 충전기 개수와 충전기 자리 겹침 검사
+- 배터리 잔량 자동 계산
+- 엑셀·PDF 시간표 출력
+- 여러 노선에서 같은 버스를 함께 사용하는 검사
 
-```env
-MONGO_INITDB_ROOT_USERNAME=bus_admin
-MONGO_INITDB_ROOT_PASSWORD=긴_실제_비밀번호
-MONGODB_URI=mongodb://bus_admin:긴_실제_비밀번호@mongo.ptm-bus.svc.cluster.local:27017/bus_time?authSource=admin
-KAKAO_REST_API_KEY=카카오_REST_API_키
-```
+자동 배차를 만들 때도 지금의 `운행편`, `휴게`, `충전` 데이터 구조를 그대로 사용하면 됩니다. 그래서 현재 데이터를 다시 바꿀 필요는 없습니다.
 
-비밀번호에 `@`, `:`, `/`, `?` 등이 있다면 `MONGODB_URI` 안에서는 URL 인코딩해야 한다. 가장 쉬운 방법은 영문·숫자만 포함한 긴 비밀번호를 사용하는 것이다.
-
-### 2. k3s와 DNS 준비
-
-1. k3s에 기본 Traefik Ingress가 실행 중인지 확인한다.
-2. `ptm.baeksung.kr` DNS A 레코드를 Traefik의 외부 IP로 연결한다.
-3. cert-manager를 k3s에 설치한다. 이메일이 설정된 `k8s/cert-manager/clusterissuer.yaml`은 GitHub Actions가 자동 적용한다.
-
-GitHub Actions는 SSH로 서버에 접속하고, 서버 안의 `kubectl`로 배포한다. 따라서 k3s 서버에는 다음이 필요하다.
-
-- GitHub Actions에서 SSH 접속 가능
-- `SSH_USER`가 `kubectl` 실행 권한 보유
-- `kubectl`이 올바른 k3s 클러스터를 바라봄
-- Docker Hub의 `ptm_bus_calc-api`, `ptm_bus_calc-web` 이미지를 내려받을 수 있음
-
-Docker Hub 저장소는 공개(public)로 만드는 것이 가장 간단하다. 비공개(private)로 유지한다면 별도의 Docker Hub image pull secret을 Kubernetes에 추가해야 한다.
-
-### 3. Actions 다시 실행
-
-Secrets와 k3s 준비가 끝나면 GitHub의 **Actions → Build and deploy → Run workflow**를 실행한다.
-
-성공하면 다음 순서로 진행된다.
-
-```text
-테스트 → Docker Hub 이미지 업로드 → SSH 접속 → k3s Secret 생성 → MongoDB/API/웹 배포 → HTTPS Ingress 연결
-```
-
-## 새 컴퓨터에서 작업하는 방법
-
-```powershell
-git clone https://github.com/tttuer/ptm_bus_calc.git
-cd ptm_bus_calc
-```
-
-로컬 실행은 아래 순서다.
+## 실행 및 테스트
 
 ```powershell
 docker compose up -d mongo
+
 cd backend
 uv run --extra dev uvicorn app.main:app --reload
 ```
@@ -102,40 +62,24 @@ uv run --extra dev uvicorn app.main:app --reload
 새 터미널에서:
 
 ```powershell
-cd ptm_bus_calc/frontend
+cd frontend
 pnpm install
 pnpm dev
 ```
 
-프로젝트 루트 `.env`에는 로컬 카카오 지도용 키를 둔다. 이 파일은 Git에 올라가지 않는다.
-
-```env
-VITE_KAKAO_MAP_KEY=카카오_JavaScript_키
-```
-
-## 확인 명령
+검증 명령:
 
 ```powershell
-cd backend
-uv run --extra dev pytest
+uv run --project backend --extra dev pytest backend/tests -q
 
-cd ../frontend
+cd frontend
 pnpm build
-
-cd ..
-kubectl kustomize k8s/base
 ```
 
-운영 오버레이 자체는 Secret 파일 없이도 검증할 수 있다. 배포 시에는 GitHub Actions가 `ENV_VARS`로 `k8s/bus-app-secrets.yaml`을 잠시 만들고 서버에 전달한다.
+## 배포 메모
 
-```powershell
-kubectl kustomize k8s/overlays/prod
-```
-
-## 주의할 점
-
-- `k8s/bus-app-secrets.yaml`과 루트 `.env`는 커밋하지 않는다.
-- GitHub Actions의 `Production` Environment에 Secret을 등록한다.
-- Docker Hub 이미지를 비공개로 만들면 Kubernetes image pull secret을 추가로 구성해야 한다.
-- `storageClassName: local-path`은 일반 k3s 기본값이다. 클러스터에 다른 StorageClass만 있다면 `k8s/base/mongo.yaml`의 값을 바꾼다.
-- cert-manager가 없으면 웹은 HTTP로 보일 수 있고 TLS 인증서는 발급되지 않는다.
+- 구성은 Vue 3 프론트엔드, FastAPI 백엔드, MongoDB, k3s입니다.
+- 새 시간표는 MongoDB의 `schedules` 컬렉션에 저장됩니다.
+- 예전 `routes` 컬렉션은 삭제하거나 수정하지 않았습니다.
+- 지도와 카카오 API는 현재 시간표 기능에 필요하지 않습니다. 배포 환경변수에 예전 키가 있어도 앱 동작에는 영향을 주지 않습니다.
+- 비밀값, `.env`, Kubernetes Secret 파일은 Git에 커밋하지 않습니다.

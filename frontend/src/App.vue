@@ -1,17 +1,16 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import RouteEditor from './components/RouteEditor.vue'
-import { useRoutesStore } from './stores/routes'
-import type { Route } from './types'
+import ScheduleEditor from './components/ScheduleEditor.vue'
+import { useSchedulesStore } from './stores/routes'
+import type { Schedule } from './types'
 
-const store = useRoutesStore()
-const selected = ref<Route | null>(null)
-
-function saved(route: Route) { const index = store.routes.findIndex(item => item.id === route.id); index < 0 ? store.routes.unshift(route) : store.routes.splice(index, 1, route); selected.value = route }
-function deleted(id: string) { store.routes = store.routes.filter(route => route.id !== id); selected.value = null }
+const store = useSchedulesStore()
+const selected = ref<Schedule | null>(null)
+function saved(schedule: Schedule) { const index = store.schedules.findIndex(item => item.id === schedule.id); index < 0 ? store.schedules.unshift(schedule) : store.schedules.splice(index, 1, schedule); selected.value = schedule }
+function deleted(id: string) { store.schedules = store.schedules.filter(schedule => schedule.id !== id); selected.value = null }
 onMounted(store.load)
 </script>
 
 <template>
-  <main><aside><h1>버스 시간 계산기</h1><button class="new" @click="selected = null">+ 노선 추가</button><p v-if="store.loading">불러오는 중...</p><button v-for="route in store.routes" :key="route.id" class="route" :class="{ active: route.id === selected?.id }" @click="selected = route"><b>{{ route.name }}</b><small>{{ route.stops.length }}개 정류장 · {{ Math.floor(route.total_seconds / 60) }}분</small></button></aside><RouteEditor :route="selected" @saved="saved" @deleted="deleted" /></main>
+  <main><aside><h1>버스 시간표</h1><button class="new" @click="selected = null">+ 시간표 추가</button><p v-if="store.loading">불러오는 중...</p><button v-for="schedule in store.schedules" :key="schedule.id" class="route" :class="{ active: schedule.id === selected?.id }" @click="selected = schedule"><b>{{ schedule.name }}</b><small>{{ schedule.trips.length }}개 운행편 · {{ schedule.issues.length }}개 알림</small></button></aside><ScheduleEditor :schedule="selected" @saved="saved" @deleted="deleted" /></main>
 </template>

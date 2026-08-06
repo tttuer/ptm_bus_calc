@@ -1,13 +1,10 @@
 import { defineStore } from 'pinia'
 import { api } from '../api'
-import type { Route } from '../types'
+import type { Schedule } from '../types'
 
-export const useRoutesStore = defineStore('routes', {
-  state: () => ({ routes: [] as Route[], loading: false }),
+export const useSchedulesStore = defineStore('schedules', {
+  state: () => ({ schedules: [] as Schedule[], loading: false }),
   actions: {
-    async load() {
-      this.loading = true
-      try { this.routes = await api.listRoutes() } finally { this.loading = false }
-    },
+    async load() { this.loading = true; try { this.schedules = await api.listSchedules() } finally { this.loading = false } },
   },
 })

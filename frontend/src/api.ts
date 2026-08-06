@@ -1,4 +1,4 @@
-import type { Estimate, Route, RouteInput, Stop } from './types'
+import type { Schedule, ScheduleInput } from './types'
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`/api${path}`, { headers: { 'Content-Type': 'application/json' }, ...options })
@@ -7,15 +7,8 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  listRoutes: () => request<Route[]>('/routes'),
-  createRoute: (route: RouteInput) => request<Route>('/routes', { method: 'POST', body: JSON.stringify(route) }),
-  updateRoute: (id: string, route: RouteInput) => request<Route>(`/routes/${id}`, { method: 'PUT', body: JSON.stringify(route) }),
-  deleteRoute: (id: string) => request<void>(`/routes/${id}`, { method: 'DELETE' }),
-  estimate: (route: RouteInput) => request<Estimate>('/routes/estimate', { method: 'POST', body: JSON.stringify(route) }),
-  drivingDistance: (origin: Stop, destination: Stop) => request<{ distance_m: number }>('/routes/driving-distance', {
-    method: 'POST', body: JSON.stringify({
-      origin_latitude: origin.latitude, origin_longitude: origin.longitude,
-      destination_latitude: destination.latitude, destination_longitude: destination.longitude,
-    }),
-  }),
+  listSchedules: () => request<Schedule[]>('/schedules'),
+  createSchedule: (schedule: ScheduleInput) => request<Schedule>('/schedules', { method: 'POST', body: JSON.stringify(schedule) }),
+  updateSchedule: (id: string, schedule: ScheduleInput) => request<Schedule>(`/schedules/${id}`, { method: 'PUT', body: JSON.stringify(schedule) }),
+  deleteSchedule: (id: string) => request<void>(`/schedules/${id}`, { method: 'DELETE' }),
 }

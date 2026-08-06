@@ -7,5 +7,5 @@ def create_client() -> AsyncMongoClient:
     return AsyncMongoClient(MONGODB_URI)
 
 
-def routes_collection(app):
-    return app.state.mongo[MONGODB_DB].routes
+def schedules_collection(app):
+    return app.state.mongo[MONGODB_DB].schedules
