@@ -1,6 +1,11 @@
 from app.schemas import ActivityInput, BusInput, DriverInput, ScheduleInput, TripInput
 from app.services.calculator import calculate
 from app.services.generator import generate
+from app.main import health_check
+
+
+def test_health_check_returns_ok():
+    assert health_check() == {"status": "ok"}
 
 
 def schedule(**changes):

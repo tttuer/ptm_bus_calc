@@ -20,6 +20,12 @@ app.add_middleware(
 # 라우터 등록
 app.include_router(schedule_router, prefix="/api")
 
+
+@app.get("/api/health", tags=["health"])
+def health_check():
+    return {"status": "ok"}
+
+
 @app.get("/")
 def read_root():
     return {"message": "Bus Schedule Auto-Generator API is running."}
