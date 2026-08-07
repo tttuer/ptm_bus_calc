@@ -68,6 +68,8 @@ def calculate_schedule(req: ScheduleRequest) -> ScheduleResponse:
         # 기점 출발 시각 결정:
         # 예정 슬롯 시각(current_go_slot)과 차량의 휴식 완료 시각(v.available_time) 중 늦은 시각에 출발
         actual_go_dept = max(current_go_slot, v["available_time"])
+        if actual_go_dept > end_min:
+            break
 
         # 기점 ➔ 종점 운행 정보 생성
         v["rounds"] += 1
