@@ -23,6 +23,7 @@ def generate(schedule: ScheduleInput) -> GenerationResult:
     while slot <= last:
         vehicle = vehicles[vehicle_index]
         departure = max(slot, vehicle["available"])
+        if departure > last: break
         if vehicle["arrival"] is not None and departure > vehicle["arrival"]:
             activities.append(ActivityInput(id=f"rest-origin-{len(activities)}", kind="rest", start_time=clock_text(vehicle["arrival"]), bus_id=buses[vehicle_index].id, duration_minutes=departure - vehicle["arrival"]))
         vehicle["round"] += 1

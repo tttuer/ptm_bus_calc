@@ -1,5 +1,5 @@
 from app.schemas import ActivityInput, BusInput, DriverInput, ScheduleInput, TripInput
-from app.services.calculator import calculate
+from app.services.calculator import calculate, to_minutes
 from app.services.generator import generate
 from app.main import health_check
 
@@ -53,3 +53,12 @@ def test_generate_calculates_interval_when_input_is_zero():
     result = generate(schedule(generation=generation(bus_count=5, interval_minutes=0)))
     assert result.schedule and result.schedule.headway_minutes == 26
     assert [trip.departure_time for trip in result.schedule.trips if trip.direction == "outbound"] == ["06:00", "06:26", "06:52"]
+
+
+def test_generate_never_leaves_origin_after_last_departure():
+    result = generate(schedule(generation=generation(last_departure="22:30", outbound_minutes=60,
+                                                     inbound_minutes=60, min_rest_minutes=15,
+                                                     bus_count=5, interval_minutes=15)))
+    assert result.schedule
+    departures = [to_minutes(trip.departure_time) for trip in result.schedule.trips if trip.direction == "outbound"]
+    assert max(departures) <= to_minutes("22:30")
